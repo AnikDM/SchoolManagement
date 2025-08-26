@@ -129,7 +129,7 @@ type StudentFormData = z.infer<typeof studentSchema>;
       grade: 'A-'
     }
   ];
-const StudentDetails: React.FC = () => {
+const StudentDetails: React.FC<{role?: string}> = ({role='teacher'}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');

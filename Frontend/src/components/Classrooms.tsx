@@ -9,9 +9,22 @@ import {
   Clock,
   User,
   ChevronRight,
+  X,
+  Plus,
 } from "lucide-react";
 import Header from "./Header";
 import { useAuth } from "../contexts/AuthContext";
+import { set } from "zod";
+import axios from "axios";
+import api from "../others/Api";
+
+interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+  email: string;
+  experience: number;
+}
 
 interface Classroom {
   id: string;
@@ -21,11 +34,13 @@ interface Classroom {
   roomNumber: string;
   capacity: number;
   currentStrength: number;
+  teacher?: Teacher;
   schedule: {
     day: string;
     startTime: string;
     endTime: string;
   }[];
+
   students: {
     id: string;
     name: string;
@@ -33,13 +48,64 @@ interface Classroom {
     attendance: number;
   }[];
 }
+interface FormState {
+  classroomName: string;
+  teacherId: string;
+  sections: number | "";
+}
 
-const Classrooms: React.FC = () => {
+const Classrooms: React.FC<{ role?: string }> = ({ role = "teacher" }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedSection, setSelectedSection] = useState("all");
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [showAddClassroomModal, setShowAddClassroomModal] = useState(false);
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]);
+  const [formData, setFormData] = useState<FormState>({
+    classroomName: "",
+    teacherId: "",
+    sections: "",
+  });
   const { user } = useAuth();
+
+  // Mock teachers data
+  const mockTeachers: Teacher[] = [
+    {
+      id: "1",
+      name: "Dr. Sarah Johnson",
+      subject: "Mathematics",
+      email: "sarah.johnson@school.edu",
+      experience: 8,
+    },
+    {
+      id: "2",
+      name: "Prof. Michael Chen",
+      subject: "Physics",
+      email: "michael.chen@school.edu",
+      experience: 12,
+    },
+    {
+      id: "3",
+      name: "Ms. Emily Rodriguez",
+      subject: "Chemistry",
+      email: "emily.rodriguez@school.edu",
+      experience: 6,
+    },
+    {
+      id: "4",
+      name: "Dr. James Wilson",
+      subject: "Biology",
+      email: "james.wilson@school.edu",
+      experience: 10,
+    },
+    {
+      id: "5",
+      name: "Ms. Lisa Thompson",
+      subject: "English",
+      email: "lisa.thompson@school.edu",
+      experience: 7,
+    },
+  ];
 
   // Mock classroom data
   const mockClassrooms: Classroom[] = [
@@ -51,6 +117,7 @@ const Classrooms: React.FC = () => {
       roomNumber: "R-101",
       capacity: 40,
       currentStrength: 35,
+      teacher: mockTeachers[0],
       schedule: [
         { day: "Monday", startTime: "09:00", endTime: "10:00" },
         { day: "Wednesday", startTime: "10:00", endTime: "11:00" },
@@ -70,6 +137,7 @@ const Classrooms: React.FC = () => {
       roomNumber: "R-205",
       capacity: 35,
       currentStrength: 32,
+      teacher: mockTeachers[1],
       schedule: [
         { day: "Tuesday", startTime: "10:00", endTime: "11:00" },
         { day: "Thursday", startTime: "09:00", endTime: "10:00" },
@@ -87,6 +155,7 @@ const Classrooms: React.FC = () => {
       roomNumber: "R-302",
       capacity: 30,
       currentStrength: 28,
+      teacher: mockTeachers[2],
       schedule: [
         { day: "Monday", startTime: "11:00", endTime: "12:00" },
         { day: "Wednesday", startTime: "14:00", endTime: "15:00" },
@@ -129,6 +198,48 @@ const Classrooms: React.FC = () => {
     return "text-green-600 bg-green-50";
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: e.target.type === "number" ? Number(value) || "" : value,
+    }));
+  };
+  
+  const handleAddClassroom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowAddClassroomModal(false);
+    try {
+      const form = e.target as HTMLFormElement;
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      console.log(data);
+      // ✅ Axios POST request (proxy handles base URL)
+      const response = await api.post("/classrooms/create", data);
+      const classroom = response.data;
+  
+      const newClassroom: Classroom = {
+        id: classroom.id.toString(),
+        name: classroom.name,
+        section: classroom.section,
+        subject: classroom.subject,
+        roomNumber: classroom.roomNumber,
+        capacity: classroom.capacity,
+        currentStrength: classroom.currentStrength,
+        teacher: undefined,
+        schedule: classroom.schedule,
+        students: [],
+      };
+  
+      setClassrooms((prev) => [...prev, newClassroom]);
+      setShowAddClassroomModal(false);
+    } catch (error) {
+      console.error("Error adding classroom:", error);
+      alert("Failed to add classroom. Please try again.");
+    }
+  };
+
   return (
     <div className="">
       {/* Filters */}
@@ -150,30 +261,28 @@ const Classrooms: React.FC = () => {
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-gray-400" />
+            </div>
+            {role === "teacher" && (
               <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                value={selectedSection}
+                onChange={(e) => setSelectedSection(e.target.value)}
                 className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
-                {subjects.map((subject) => (
-                  <option key={subject} value={subject}>
-                    {subject === "all" ? "All Subjects" : subject}
+                {sections.map((section) => (
+                  <option key={section} value={section}>
+                    {section === "all" ? "All Sections" : `Section ${section}`}
                   </option>
                 ))}
               </select>
-            </div>
-
-            <select
-              value={selectedSection}
-              onChange={(e) => setSelectedSection(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              {sections.map((section) => (
-                <option key={section} value={section}>
-                  {section === "all" ? "All Sections" : `Section ${section}`}
-                </option>
-              ))}
-            </select>
+            )}
+            {role === "admin" && (
+              <button
+                onClick={() => setShowAddClassroomModal(true)}
+                className="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors"
+              >
+                Add Classroom
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -274,6 +383,14 @@ const Classrooms: React.FC = () => {
                     {classroom.name}
                   </h3>
                   <p className="text-sm text-gray-600">{classroom.subject}</p>
+                  {classroom.teacher && (
+                    <div className="flex items-center mt-1">
+                      <User className="h-3 w-3 mr-1 text-gray-400" />
+                      <p className="text-xs text-gray-500">
+                        {classroom.teacher.name}
+                      </p>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center text-sm text-gray-500">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -360,6 +477,91 @@ const Classrooms: React.FC = () => {
           <p className="mt-1 text-sm text-gray-500">
             Try adjusting your search criteria or filters.
           </p>
+        </div>
+      )}
+
+      {/* Add Classroom Modal */}
+      {showAddClassroomModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                Add New Classroom
+              </h3>
+              <button
+                onClick={() => setShowAddClassroomModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleAddClassroom}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Classroom Name
+                </label>
+                <input
+                  type="text"
+                  name="classroomName"
+                  value={formData.classroomName}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Class 10A"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Alloted Teacher
+                </label>
+                <select
+                  name="teacherId"
+                  value={formData.teacherId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                >
+                  <option value="">Select Teacher</option>
+                  {mockTeachers.map((teacher) => (
+                    <option key={teacher.id} value={teacher.id}>
+                      {teacher.name} - {teacher.subject} ({teacher.experience}{" "}
+                      years exp.)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  No. of Sections
+                </label>
+                <input
+                  type="number"
+                  name="sections"
+                  value={formData.sections}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., 1"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => console.log("Cancel clicked")}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                >
+                  Add Classroom
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

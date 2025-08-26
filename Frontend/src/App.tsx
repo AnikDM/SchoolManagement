@@ -9,10 +9,11 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import TeacherDashboard from "./components/TeacherDashboard";
 import AdminDashboard from "./components/AdminDashboard";
-import ProtectedRoute from "./components/ProtectedRoute";
 import StudentDetails from "./components/StudentDetails";
 import TeacherLayout from "./layout/TeacherLayout";
 import Classrooms from "./components/Classrooms";
+import AdminLayout from "./layout/AdminLayout";
+import TeacherDetails from "./components/TeacherDetails";
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -31,15 +32,12 @@ function AppRoutes() {
         }
       />
 
-      {/* Admin */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute isAdmin={true}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="students" element={<StudentDetails role="admin" />} />
+        <Route path="classrooms" element={<Classrooms role="admin" />} />
+        <Route path="teachers" element={<TeacherDetails/>} />
+      </Route>
 
       {/* Teacher with nested routes */}
       <Route path="/teacher" element={<TeacherLayout />}>
@@ -54,7 +52,7 @@ function AppRoutes() {
         path="/"
         element={
           user ? (
-            <Navigate to={user.isAdmin ? "/teacher" : "/admin"} />
+            <Navigate to={user.isAdmin ? "/admin" : "/teacher"} />
           ) : (
             <Navigate to="/login" />
           )

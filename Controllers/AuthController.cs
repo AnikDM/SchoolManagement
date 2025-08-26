@@ -47,8 +47,13 @@ namespace SchoolManagement.Controllers
                 }
                 user.PasswordHash = _passwordHasher.HashPassword(user.Username, user.PasswordHash);
 
-                teacher.FullName = entity.FullName;
-                teacher.ApplicationUser = user;//needs to update with applicationUserId
+                if (entity.FullName.Equals("admin"))
+                    user.IsAdmin = true;
+                else
+                {
+                    teacher.FullName = entity.FullName;
+                    teacher.ApplicationUser = user;//needs to update with applicationUserId
+                }
             }
 
             // Add the new user to the database
@@ -82,8 +87,18 @@ namespace SchoolManagement.Controllers
                     {
                         profile = await _context.TeacherProfiles.SingleOrDefaultAsync(p => p.ApplicationUser.Id == user.Id);
                     }
-                    //string username = await _context.TeacherProfiles;
-                    return Ok(new { Token = token, Username= profile.ApplicationUser.Username,ApplicationUserId=profile.ApplicationUser.Id,TeachersId=profile.Id,FullName=profile.FullName,EmployeeId=profile.EmployeeId, IsAdmin=profile.ApplicationUser.IsAdmin});
+                    if (profile.FullName != null)
+                        return Ok(new { Token = token, Username = profile.ApplicationUser.Username, ApplicationUserId = profile.ApplicationUser.Id, TeachersId = profile.Id, FullName = profile.FullName, EmployeeId = profile.EmployeeId, IsAdmin = profile.ApplicationUser.IsAdmin });
+                    else
+                        return Ok(new
+                        {
+                            Token = token,
+                            Username = user.Username,
+                            ApplicationUserId = user.Id,
+                            IsAdmin = user.IsAdmin,
+                            TeachersId=0,
+                            FullName="Admin"
+                        });
                 }
                 else
                     return BadRequest("Wrong password.");

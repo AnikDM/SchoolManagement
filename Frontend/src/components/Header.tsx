@@ -1,5 +1,6 @@
-import React from "react";
-import { BookOpen, Bell, User } from "lucide-react";
+import React, { useState } from "react";
+import { BookOpen, Bell, User, ChevronDown } from "lucide-react";
+import Profile from "./Profile";
 
 interface HeaderProps {
   userName?: string;
@@ -14,6 +15,8 @@ const Header: React.FC<HeaderProps> = ({
   unreadNotifications,
   onToggleNotifications,
 }) => {
+  const [showProfile, setShowProfile] = useState(false);
+
   return (
     <header className="bg-white shadow-sm h-20 border-b border-gray-200">
       <div className="px-6 py-4">
@@ -26,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="flex items-center space-x-4">
-            <div className="relative">
+            <div className="relative">  
               <button
                 onClick={onToggleNotifications}
                 className="relative p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-lg"
@@ -41,15 +44,25 @@ const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setShowProfile(true)}
+              className="flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
               <User className="h-5 w-5 text-gray-400" />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium">
                 {userName}
               </span>
-            </div>
+              <ChevronDown className="h-4 w-4 text-gray-400" />
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Profile Modal */}
+      <Profile
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
     </header>
   );
 };

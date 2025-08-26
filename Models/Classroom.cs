@@ -1,4 +1,5 @@
-﻿using static System.Collections.Specialized.BitVector32;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using static System.Collections.Specialized.BitVector32;
 
 namespace SchoolManagement.Models
 {
@@ -8,5 +9,8 @@ namespace SchoolManagement.Models
         public string Name { get; set; } // e.g. "Grade 5"
         public int Sections { get; set; }
         public int Strength { get; set; }
+        [ForeignKey("ClassTeacher")]
+        public int ClassTeacherId { get; set; }
+        public TeacherProfile ClassTeacher { get; set; }
     }
 }

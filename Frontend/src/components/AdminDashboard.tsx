@@ -57,32 +57,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar role="admin" onClick={() => setShowStudents(true)} />
-      
       {/* Main Content */}
       <div className={`${showStudents ? 'flex-1' : 'flex-1'} flex flex-col overflow-hidden`}>
         <div className="flex h-full">
           {/* Dashboard Content */}
           <div className={`${showStudents ? 'w-1/2' : 'w-full'} flex flex-col overflow-hidden`}>
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Building className="h-8 w-8 text-primary-600 mr-3" />
-                <h1 className="text-xl font-semibold text-gray-900">School Management System - Admin</h1>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <User className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-700">{user?.fullName}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-6">

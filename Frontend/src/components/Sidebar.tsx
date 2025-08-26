@@ -30,6 +30,7 @@ interface MenuItem {
   icon: React.ReactNode;
   href: string;
   badge?: string;
+  disabled?: boolean;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ role, onClick }) => {
@@ -37,33 +38,35 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onClick }) => {
   const location = useLocation();
 
   const adminMenuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" />, href: '/admin' },
-    { id: 'teachers', label: 'Teachers', icon: <Users className="h-5 w-5" />, href: '/admin/teachers', badge: '12' },
-    { id: 'students', label: 'Students', icon: <GraduationCap className="h-5 w-5" />, href: '/admin/students', badge: '450' },
-    { id: 'classrooms', label: 'Classes', icon: <BookOpen className="h-5 w-5" />, href: '/admin/classes', badge: '24' },
-    { id: 'schedule', label: 'Schedule', icon: <Calendar className="h-5 w-5" />, href: '/admin/schedule' },
-    { id: 'reports', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, href: '/admin/reports' },
-    { id: 'departments', label: 'Departments', icon: <Building className="h-5 w-5" />, href: '/admin/departments' },
-    { id: 'documents', label: 'Documents', icon: <FileText className="h-5 w-5" />, href: '/admin/documents' },
-    { id: 'achievements', label: 'Achievements', icon: <Award className="h-5 w-5" />, href: '/admin/achievements' },
-    { id: 'messages', label: 'Messages', icon: <MessageSquare className="h-5 w-5" />, href: '/admin/messages', badge: '3' },
-    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="h-5 w-5" />, href: '/admin/help' },
-    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/admin/settings' },
+    { id: 'dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" />, href: '/admin', disabled: false },
+    { id: 'teachers', label: 'Teachers', icon: <Users className="h-5 w-5" />, href: '/admin/teachers', badge: '12', disabled: false },
+    { id: 'students', label: 'Students', icon: <GraduationCap className="h-5 w-5" />, href: '/admin/students', badge: '450', disabled: false },
+    { id: 'classrooms', label: 'Classes', icon: <BookOpen className="h-5 w-5" />, href: '/admin/classrooms', badge: '24', disabled: false },
+    { id: 'schedule', label: 'Schedule', icon: <Calendar className="h-5 w-5" />, href: '/admin/schedule', disabled: true },
+    { id: 'reports', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, href: '/admin/reports', disabled: true },
+    { id: 'departments', label: 'Departments', icon: <Building className="h-5 w-5" />, href: '/admin/departments', disabled: true },
+    { id: 'documents', label: 'Documents', icon: <FileText className="h-5 w-5" />, href: '/admin/documents', disabled: true },
+    { id: 'achievements', label: 'Achievements', icon: <Award className="h-5 w-5" />, href: '/admin/achievements', disabled: true },
+    { id: 'messages', label: 'Messages', icon: <MessageSquare className="h-5 w-5" />, href: '/admin/messages', badge: '3', disabled: true },
+    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="h-5 w-5" />, href: '/admin/help', disabled: true },
+    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/admin/settings', disabled: true },
   ];
-
+  
   const teacherMenuItems: MenuItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" />, href: '/teacher' },
-    { id: 'classrooms', label: 'My Classes', icon: <BookOpen className="h-5 w-5" />, href: '/teacher/classrooms', badge: '3' },
-    { id: 'students', label: 'Students', icon: <Users className="h-5 w-5" />, href: '/teacher/students', badge: '85' },
-    { id: 'attendance', label: 'Attendance', icon: <Calendar className="h-5 w-5" />, href: '/teacher/attendance' },
-    { id: 'grades', label: 'Grades', icon: <Award className="h-5 w-5" />, href: '/teacher/grades' },
-    { id: 'assignments', label: 'Assignments', icon: <FileText className="h-5 w-5" />, href: '/teacher/assignments' },
-    { id: 'schedule', label: 'Schedule', icon: <Calendar className="h-5 w-5" />, href: '/teacher/schedule' },
-    { id: 'reports', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, href: '/teacher/reports' },
-    { id: 'messages', label: 'Messages', icon: <MessageSquare className="h-5 w-5" />, href: '/teacher/messages', badge: '5' },
-    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="h-5 w-5" />, href: '/teacher/help' },
-    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/teacher/settings' },
+    { id: 'dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" />, href: '/teacher', disabled: false },
+    { id: 'classrooms', label: 'My Classes', icon: <BookOpen className="h-5 w-5" />, href: '/teacher/classrooms', badge: '3', disabled: false },
+    { id: 'students', label: 'Students', icon: <Users className="h-5 w-5" />, href: '/teacher/students', badge: '85', disabled: false },
+    { id: 'attendance', label: 'Attendance', icon: <Calendar className="h-5 w-5" />, href: '/teacher/attendance', disabled: true },
+    { id: 'grades', label: 'Grades', icon: <Award className="h-5 w-5" />, href: '/teacher/grades', disabled: true },
+    { id: 'assignments', label: 'Assignments', icon: <FileText className="h-5 w-5" />, href: '/teacher/assignments', disabled: true },
+    { id: 'schedule', label: 'Schedule', icon: <Calendar className="h-5 w-5" />, href: '/teacher/schedule', disabled: true },
+    { id: 'reports', label: 'Reports', icon: <BarChart3 className="h-5 w-5" />, href: '/teacher/reports', disabled: true },
+    { id: 'messages', label: 'Messages', icon: <MessageSquare className="h-5 w-5" />, href: '/teacher/messages', badge: '5', disabled: true },
+    { id: 'help', label: 'Help & Support', icon: <HelpCircle className="h-5 w-5" />, href: '/teacher/help', disabled: true },
+    { id: 'settings', label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/teacher/settings', disabled: true },
   ];
+  
+  
 
   const menuItems = role === 'admin' ? adminMenuItems : teacherMenuItems;
 
@@ -114,11 +117,16 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onClick }) => {
                 }
                 window.location.href = item.href;
               }}
+              disabled={item.disabled}
               className={`group flex items-center w-full px-3 py-2 text-sm font-medium rounded-md transition-colors text-left ${
                 isActive
                   ? 'bg-blue-200 text-blue-700 '
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
+              style={{
+                opacity: item.disabled ? 0.5 : 1,
+                cursor: item.disabled ? 'not-allowed' : 'pointer',
+              }}
             >
             <div className={`flex items-center justify-center w-5 h-5 mr-3 ${
               isActive ? 'text-blue-700' : ''
