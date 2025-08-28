@@ -19,6 +19,17 @@ namespace SchoolManagement.Controllers
             _mapper = mapper;
         }
 
+        [HttpPost("create")]
+        public async Task<ActionResult> CreateTeacher(TeacherDto entity)
+        {
+            if (entity != null)
+            {
+                //var result=_auth.Register(new RegisterUserDTO { FullName =entity.FullName??"",Username=entity.Username??""});
+                //Console.WriteLine(result);
+            }
+            return Ok("Teacher Profile created");
+        }
+
         // Fetch all teachers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TeacherDto>>> GetTeachers()

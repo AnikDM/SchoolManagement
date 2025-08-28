@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Filter,
@@ -15,41 +15,34 @@ import {
   Award,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-
-interface Teacher {
-  id: string;
-  name: string;
-  subject: string;
-  email: string;
-  experience: number;
-  phone: string;
-  qualification: string;
-  joinDate: string;
-  status: "active" | "inactive";
-}
+import { CreateTeacherData, useTeacher } from "../hooks/useTeacher";
 
 const TeacherDetails: React.FC = () => {
+  const { createTeacher, fetchTeachers,teachers } = useTeacher();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedExperience, setSelectedExperience] = useState("all");
   const [showAddTeacherModal, setShowAddTeacherModal] = useState(false);
-  const [newTeacher, setNewTeacher] = useState({
+  const [newTeacher, setNewTeacher] = useState<CreateTeacherData>({
     name: "",
     subject: "",
     email: "",
     phone: "",
     qualification: "",
-    experience: "",
+    experience: 0,
+    department: "",
+    joiningDate: "",
   });
   const { user } = useAuth();
-
   // Check if user is admin
   if (!user?.isAdmin) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            Access Denied
+          </h3>
           <p className="mt-1 text-sm text-gray-500">
             Only administrators can access teacher management.
           </p>
@@ -57,76 +50,6 @@ const TeacherDetails: React.FC = () => {
       </div>
     );
   }
-
-  // Mock teachers data
-  const mockTeachers: Teacher[] = [
-    {
-      id: "1",
-      name: "Dr. Sarah Johnson",
-      subject: "Mathematics",
-      email: "sarah.johnson@school.edu",
-      phone: "+1 (555) 123-4567",
-      qualification: "Ph.D. in Mathematics",
-      experience: 8,
-      joinDate: "2016-08-15",
-      status: "active",
-    },
-    {
-      id: "2",
-      name: "Prof. Michael Chen",
-      subject: "Physics",
-      email: "michael.chen@school.edu",
-      phone: "+1 (555) 234-5678",
-      qualification: "M.Sc. in Physics",
-      experience: 12,
-      joinDate: "2012-09-01",
-      status: "active",
-    },
-    {
-      id: "3",
-      name: "Ms. Emily Rodriguez",
-      subject: "Chemistry",
-      email: "emily.rodriguez@school.edu",
-      phone: "+1 (555) 345-6789",
-      qualification: "M.Sc. in Chemistry",
-      experience: 6,
-      joinDate: "2018-01-10",
-      status: "active",
-    },
-    {
-      id: "4",
-      name: "Dr. James Wilson",
-      subject: "Biology",
-      email: "james.wilson@school.edu",
-      phone: "+1 (555) 456-7890",
-      qualification: "Ph.D. in Biology",
-      experience: 10,
-      joinDate: "2014-03-20",
-      status: "active",
-    },
-    {
-      id: "5",
-      name: "Ms. Lisa Thompson",
-      subject: "English",
-      email: "lisa.thompson@school.edu",
-      phone: "+1 (555) 567-8901",
-      qualification: "M.A. in English Literature",
-      experience: 7,
-      joinDate: "2017-07-05",
-      status: "active",
-    },
-    {
-      id: "6",
-      name: "Mr. David Kumar",
-      subject: "Computer Science",
-      email: "david.kumar@school.edu",
-      phone: "+1 (555) 678-9012",
-      qualification: "M.Tech in Computer Science",
-      experience: 5,
-      joinDate: "2019-08-12",
-      status: "active",
-    },
-  ];
 
   const subjects = [
     "all",
@@ -148,20 +71,22 @@ const TeacherDetails: React.FC = () => {
     "10+ years",
   ];
 
-  const filteredTeachers = mockTeachers.filter((teacher) => {
+  const filteredTeachers = teachers.filter((teacher) => {
     const matchesSearch =
       teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       teacher.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
       teacher.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesSubject =
       selectedSubject === "all" || teacher.subject === selectedSubject;
-    
+
     const matchesExperience = () => {
       if (selectedExperience === "all") return true;
       if (selectedExperience === "0-2 years") return teacher.experience <= 2;
-      if (selectedExperience === "3-5 years") return teacher.experience >= 3 && teacher.experience <= 5;
-      if (selectedExperience === "6-10 years") return teacher.experience >= 6 && teacher.experience <= 10;
+      if (selectedExperience === "3-5 years")
+        return teacher.experience >= 3 && teacher.experience <= 5;
+      if (selectedExperience === "6-10 years")
+        return teacher.experience >= 6 && teacher.experience <= 10;
       if (selectedExperience === "10+ years") return teacher.experience > 10;
       return true;
     };
@@ -173,6 +98,8 @@ const TeacherDetails: React.FC = () => {
     e.preventDefault();
     // Here you would typically send the data to your backend
     console.log("Adding teacher:", newTeacher);
+
+    createTeacher(newTeacher);
     setShowAddTeacherModal(false);
     setNewTeacher({
       name: "",
@@ -180,7 +107,9 @@ const TeacherDetails: React.FC = () => {
       email: "",
       phone: "",
       qualification: "",
-      experience: "",
+      experience: 0,
+      department: "",
+      joiningDate: "",
     });
   };
 
@@ -254,8 +183,12 @@ const TeacherDetails: React.FC = () => {
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-              <p className="text-2xl font-bold text-gray-900">{mockTeachers.length}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Total Teachers
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {teachers.length}
+              </p>
             </div>
           </div>
         </div>
@@ -266,9 +199,11 @@ const TeacherDetails: React.FC = () => {
               <BookOpen className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Subjects Covered</p>
+              <p className="text-sm font-medium text-gray-600">
+                Subjects Covered
+              </p>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(mockTeachers.map(t => t.subject)).size}
+                {new Set(teachers.map((t) => t.subject)).size}
               </p>
             </div>
           </div>
@@ -280,9 +215,15 @@ const TeacherDetails: React.FC = () => {
               <Award className="h-6 w-6 text-purple-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Avg Experience</p>
+              <p className="text-sm font-medium text-gray-600">
+                Avg Experience
+              </p>
               <p className="text-2xl font-bold text-gray-900">
-                {Math.round(mockTeachers.reduce((sum, t) => sum + t.experience, 0) / mockTeachers.length)} years
+                {Math.round(
+                  teachers.reduce((sum, t) => sum + t.experience, 0) /
+                  teachers.length
+                )}{" "}
+                years
               </p>
             </div>
           </div>
@@ -294,9 +235,11 @@ const TeacherDetails: React.FC = () => {
               <GraduationCap className="h-6 w-6 text-orange-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Active Teachers</p>
+              <p className="text-sm font-medium text-gray-600">
+                Active Teachers
+              </p>
               <p className="text-2xl font-bold text-gray-900">
-                {mockTeachers.filter(t => t.status === "active").length}
+                {0}
               </p>
             </div>
           </div>
@@ -314,15 +257,21 @@ const TeacherDetails: React.FC = () => {
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">{teacher.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {teacher.name}
+                  </h3>
                   <p className="text-sm text-gray-600">{teacher.subject}</p>
                   <div className="flex items-center mt-1">
                     <GraduationCap className="h-3 w-3 mr-1 text-gray-400" />
-                    <p className="text-xs text-gray-500">{teacher.qualification}</p>
+                    <p className="text-xs text-gray-500">
+                      {teacher.qualification}
+                    </p>
                   </div>
                 </div>
                 <span
-                  className={`text-sm font-medium px-2 py-1 rounded-full ${getExperienceColor(teacher.experience)}`}
+                  className={`text-sm font-medium px-2 py-1 rounded-full ${getExperienceColor(
+                    teacher.experience
+                  )}`}
                 >
                   {teacher.experience} years
                 </span>
@@ -340,20 +289,10 @@ const TeacherDetails: React.FC = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Calendar className="h-4 w-4 mr-2" />
-                  <span>Joined: {new Date(teacher.joinDate).toLocaleDateString()}</span>
+                  <span>
+                    Joined: {new Date(teacher.joiningDate||"2023-01-01").toLocaleDateString()}
+                  </span>
                 </div>
-              </div>
-
-              {/* Status */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center">
-                  <div className={`w-2 h-2 rounded-full mr-2 ${teacher.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                  <span className="text-sm text-gray-600 capitalize">{teacher.status}</span>
-                </div>
-                <button className="flex items-center text-sm text-primary-600 hover:text-primary-700 font-medium">
-                  View Details
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
               </div>
             </div>
           </div>
@@ -364,7 +303,9 @@ const TeacherDetails: React.FC = () => {
       {filteredTeachers.length === 0 && (
         <div className="text-center py-12">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No teachers found</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            No teachers found
+          </h3>
           <p className="mt-1 text-sm text-gray-500">
             Try adjusting your search criteria or filters.
           </p>
@@ -376,7 +317,9 @@ const TeacherDetails: React.FC = () => {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Add New Teacher</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Add New Teacher
+              </h3>
               <button
                 onClick={() => setShowAddTeacherModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -394,7 +337,9 @@ const TeacherDetails: React.FC = () => {
                   type="text"
                   required
                   value={newTeacher.name}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({ ...newTeacher, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="e.g., Dr. John Smith"
                 />
@@ -407,7 +352,9 @@ const TeacherDetails: React.FC = () => {
                 <select
                   required
                   value={newTeacher.subject}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, subject: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({ ...newTeacher, subject: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="">Select Subject</option>
@@ -427,7 +374,9 @@ const TeacherDetails: React.FC = () => {
                   type="email"
                   required
                   value={newTeacher.email}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({ ...newTeacher, email: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="john.smith@school.edu"
                 />
@@ -441,7 +390,9 @@ const TeacherDetails: React.FC = () => {
                   type="tel"
                   required
                   value={newTeacher.phone}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, phone: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({ ...newTeacher, phone: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="+1 (555) 123-4567"
                 />
@@ -455,7 +406,12 @@ const TeacherDetails: React.FC = () => {
                   type="text"
                   required
                   value={newTeacher.qualification}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, qualification: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({
+                      ...newTeacher,
+                      qualification: e.target.value,
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="e.g., Ph.D. in Mathematics"
                 />
@@ -471,7 +427,12 @@ const TeacherDetails: React.FC = () => {
                   min="0"
                   max="50"
                   value={newTeacher.experience}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, experience: e.target.value })}
+                  onChange={(e) =>
+                    setNewTeacher({
+                      ...newTeacher,
+                      experience: Number(e.target.value),
+                    })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="5"
                 />

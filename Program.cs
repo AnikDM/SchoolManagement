@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SchoolManagement.IServices;
 using SchoolManagement.Models;
 using SchoolManagement.Others;
+using SchoolManagement.Services;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +29,7 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(cfg => { },typeof(MappingProfile));
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build(); // creates webapplication object with conofigurations and services needed to use the middleware pipeline
 
